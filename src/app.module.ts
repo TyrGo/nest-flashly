@@ -17,9 +17,10 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
     UsersModule,
     MongooseModule.forRootAsync({
       imports: [ConfigModule],
-      useFactory: async (configService: ConfigService) => ({
-        uri: configService.get<string>('DB_CONNECTION_STRING'),
-      }),
+      useFactory: async (configService: ConfigService) => {
+        const SECRET_KEY = configService.get<string>('SECRET_KEY');
+        return { uri: configService.get<string>('DB_CONNECTION_STRING') };
+      },
       inject: [ConfigService],
     }),
     CardsModule,

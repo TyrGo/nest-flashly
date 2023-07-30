@@ -7,6 +7,11 @@ import { Card } from './cards.model';
 export class CardsService {
   constructor(@InjectModel('Card') private readonly cardModel: Model<Card>) {}
 
+  async findOne(cardId: string): Promise<Card> {
+    const card = await this.cardModel.findById(cardId);
+    return card;
+  }
+
   async createCard(word: string, defn: string, userId: string) {
     const newCard = new this.cardModel({ word, defn, userId });
     const result = await newCard.save();
@@ -20,7 +25,7 @@ export class CardsService {
 
   // Return first card overdue or else first card by highest bin
   // Except if no cards or all cards beyond bin 11, return message
-  async getCard(userId: string) {
+  async getNextCard(userId: string) {
     let card = null;
     let message = null;
     const hasCard = await this.cardModel.exists({ userId });
@@ -28,7 +33,7 @@ export class CardsService {
     if (!hasCard) {
       message = 'Please create new cards.'; //or throw
     } else {
-      card = await this.getNextCard(userId);
+      card = await this.getDueCard(userId);
       if (!card) {
         message = 'You have no more words to review!'; //or throw
       }
@@ -48,7 +53,6 @@ export class CardsService {
 
   async destroyCard(cardId: string): Promise<{ message: string }> {
     await this.cardModel.findByIdAndDelete(cardId);
-
     return { message: 'Card deleted' };
   }
 
@@ -75,7 +79,7 @@ export class CardsService {
     return (new Date(due).getTime() - Date.now()) / 1000;
   }
 
-  private async getNextCard(userId: string): Promise<Card> {
+  private async getDueCard(userId: string): Promise<Card> {
     const activeCards = await this.cardModel
       .find({ userId, bin: { $lt: 12 } })
       .sort('due');

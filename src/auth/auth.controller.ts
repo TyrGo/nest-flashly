@@ -1,15 +1,5 @@
-import {
-  Body,
-  Controller,
-  Get,
-  Post,
-  Request,
-  UseGuards,
-} from '@nestjs/common';
+import { Body, Controller, Post } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { UserIsUserGuard } from './gaurds/user-is-user.gaurd';
-import { GetUser } from 'src/common/decorators/get-user.decorator';
-import { AuthGuard } from '@nestjs/passport';
 
 @Controller('auth')
 export class AuthController {
@@ -31,11 +21,5 @@ export class AuthController {
   ): Promise<{ accessToken: string }> {
     const token = await this.authService.loginUser(username, password);
     return token;
-  }
-
-  @UseGuards(AuthGuard('jwt'), UserIsUserGuard)
-  @Get('me')
-  getProfile() {
-    return 'Hello';
   }
 }
